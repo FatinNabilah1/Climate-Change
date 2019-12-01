@@ -6,14 +6,14 @@ library(purrr)
 library(tidyr)
 library(mgcv)
 library(DT)
+library(rgdal)
 library(leaflet)
 
 #remove NA
 #Load data
 #cmodels_details <- read.csv("C:/Users/User/Documents/modified_file.csv", header=TRUE, sep = ",")
-#cmodels_details <- na.omit(cmodels_details)
 #saveRDS(A,"C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.rds")
-cmodels_details<-read.csv('./modified_file.csv', header=TRUE, sep = ",")
+cmodels_details<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
 
 shinyServer(function(input, output) {
         
@@ -22,6 +22,8 @@ shinyServer(function(input, output) {
         
         #read the 100 cities names (the unique values)
         CityNames<-unique(cmodels_details$City) 
+        #get Years (the unique values)
+        uniqueYears<-unique(cmodels_details$years) 
         
         #Cities names list
         output$CitySelector<-renderUI({
@@ -109,12 +111,84 @@ shinyServer(function(input, output) {
                 cmodels_details
         })
         
-        output$pal <- 
-                renderLeaflet({
-                        colorQuantile("YlOrRd", NULL, n = 8)
-                        leaflet(cmodels_details) %>% addTiles() %>%
-                        addCircleMarkers(cmodels_details$Longitude, cmodels_details$Latitude, color = ~pal(tann))
-                        
-                })
+        
+        #Cities names list
+        output$CitySelector1<-renderUI({
+                selectInput('cities1', 'City',
+                            CityNames, 
+                            multiple=FALSE, 
+                            selectize=TRUE, 
+                            selected="Jakarta") #default value
+        })
+        
+        #Years list
+        output$YearsSelector<-renderUI({
+                selectInput('years', 'Years',
+                            uniqueYears, 
+                            multiple=FALSE, 
+                            selectize=TRUE, 
+                            selected=1984) #default value
+        })
+        
+        
+        #get the selected cities
+        SelectedCity1<-reactive({
+                
+                if(is.null(input$cities1) || length(input$cities1)==0)
+                        return()
+                as.vector(input$cities1)
+                
+        })
+        
+        #get the selected years
+        SelectedYears<-reactive({
+                
+                if(is.null(input$years) || length(input$years)==0)
+                        return()
+                as.numeric(as.vector(input$years))
+                
+        })
+        
+        #filter the data according to the selected city and month/s
+        citiesDF1<-reactive({
+                cmodels_details %>%
+                        filter(City %in% SelectedCity1()) %>%
+                        filter(years %in% SelectedYears())
+        }) 
+        
+        
+        # Due to use of leafletProxy below, this should only be called once
+        output$worldmap<-renderLeaflet({
+                
+                leaflet() %>%
+                        addTiles()    
+        })
+        
+        
+        
+        observe({
+                theData<-citiesDF1() 
+                
+                # colour palette mapped to data
+                pal <- colorQuantile("YlGn", theData$AverageTemperature, n = 9) 
+                
+                # set text for the clickable popup labels
+                borough_popup <- paste0("<strong>City: </strong>", 
+                                        theData$City, 
+                                        "<br><strong>
+                            Average Temp: </strong>", theData$AverageTemperature
+                )
+                
+                # If the data changes, the polygons are cleared and redrawn, however, the map (above) is not redrawn
+                leafletProxy("worldmap") %>%
+                        clearShapes() %>%
+                        addPolygons(lng = theData$Longitud,
+                                    lat = theData$Latitude,
+                                    fillOpacity = 0.8, 
+                                    color = "black", 
+                                    weight = 2,
+                                    popup = borough_popup)  
+                
+        })
         
 })
