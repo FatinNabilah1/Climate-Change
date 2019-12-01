@@ -22,7 +22,7 @@ shinyUI(fluidPage(
                                 helpText("Select one or more months:"),
                                 uiOutput("MonthSelector"),
                                 
-                                helpText("Select type of plot or histogram:"),
+                                helpText("Select type of plot:"),
                                 
                                 checkboxGroupInput("checkPlot", 
                                                    label = ("Plots"), 
@@ -48,9 +48,19 @@ shinyUI(fluidPage(
                             DT::dataTableOutput("climatetable")
                     )),
            tabPanel("World Map",
-                    basicPage(
-                            leafletOutput("pal", height=400)
+                    sidebarLayout(
+                            
+                            sidebarPanel(
+                                    helpText("Select one cities:"),
+                                    uiOutput("CitySelector1"),
+                                    helpText("Select years:"),
+                                    uiOutput("YearsSelector")
+                                        
                            
+                    ),
+                    #Main Panel contains the plot/s
+                    mainPanel(
+                            leafletOutput("worldmap", height=400)
                     ))
-        )
+        ))
 ))
