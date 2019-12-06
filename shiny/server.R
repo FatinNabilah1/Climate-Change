@@ -17,13 +17,15 @@ cmodels_details<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByMajor
 
 shinyServer(function(input, output) {
         
+        #############################INTERACTIVE 1###################################
         output$overview<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
-        
+ 
         
         #read the 100 cities names (the unique values)
         CityNames<-unique(cmodels_details$City) 
-        #get Years (the unique values)
-        uniqueYears<-unique(cmodels_details$years) 
+        
+        #get Country (the unique values)
+        uniqueCountry<-unique(cmodels_details$Country) 
         
         #Cities names list
         output$CitySelector<-renderUI({
@@ -61,7 +63,6 @@ shinyServer(function(input, output) {
                 
         })
         
-        
         #filter the data according to the selected city and month/s
         citiesDF<-reactive({
                         cmodels_details %>%
@@ -79,8 +80,15 @@ shinyServer(function(input, output) {
              
         }) 
         
-        ############PLOT#########
-        output$RegPlot<-renderPlot({
+        #get Check group input (type of plot)
+        checkedVal1 <- reactive({
+                as.vector(input$checkPlot1)
+                
+        }) 
+        
+        #############################INTERACTIVE 1 PLOT###################################
+        
+        output$RegPlotCities<-renderPlot({
                 #check if city and month are not null
                 if ((length(SelectedCity())>0) && (length(SelectedMonth())>0))
                         
@@ -106,11 +114,82 @@ shinyServer(function(input, output) {
                         g
                                                }
         })
-        #########################
+        ############################ INTERACTIVE 2 #######################################
+        output$overview1<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
+        
+        #get Years (the unique values)
+        uniqueYears<-sort(unique(cmodels_details$years)) 
+        
+        #City names list
+        output$CitysSelector<-renderUI({
+                selectInput('citys', 'City',
+                            CityNames, 
+                            multiple=TRUE, 
+                            selectize=TRUE, 
+                            selected="Jakarta") #default value
+        })
+        
+        #Year list
+        output$yearSelector<-renderUI({
+                selectInput('years', 'Year',
+                            uniqueYears, 
+                            multiple=FALSE, 
+                            selectize=TRUE, 
+                            selected="1984") #default value
+        })
+        
+        #get the selected country
+        SelectedCitys<-reactive({
+                
+                if(is.null(input$citys) || length(input$citys)==0)
+                        return()
+                as.vector(input$citys)
+                
+        })
+        
+        #get the selected Years
+        SelectedYear<-reactive({
+                
+                if(is.null(input$years) || length(input$years)==0)
+                        return()
+                as.vector(input$years)
+                
+        })
+        
+        
+        #filter the data according to the selected country
+        citysDF<-reactive({
+                cmodels_details %>%
+                        filter(City %in% SelectedCitys()) %>%
+                        filter(years %in% SelectedYear())
+        }) 
+        
+        ############################INTERACTIVE 2 PLOT###################################
+        output$RegPlotCountry<-renderPlot({
+                #check if country are not null
+                if ((length(SelectedCitys())>0))
+                        
+                {g<-ggplot(citysDF(),
+                           aes(x=factor(mon),y=AverageTemperature,
+                           color = City, group = City))+
+                    geom_line(size = 2, alpha = 0.75) +
+                    geom_point(size =3, alpha = 0.75) +
+                        
+                    ggtitle("Average Temperature per Years by City") +
+                    labs(x="month",y="Average Temperature")+
+                    theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=32, hjust=0.5)) +
+                    theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
+                    theme_classic()
+                
+                g
+                }
+        })
+        #############################DATA EXPLORER###################################
         output$climatetable = DT::renderDataTable({
                 cmodels_details
         })
         
+        ############################## WORLD MAP ####################################
         
         #Cities names list
         output$CitySelector1<-renderUI({
