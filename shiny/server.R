@@ -8,9 +8,12 @@ library(mgcv)
 library(DT)
 library(rgdal)
 library(leaflet)
+library(rworldmap)
 
 #load climate file or data
-climate_data<-read.csv("C:/Users/User/Documents/modified_file1.csv", header=TRUE, sep = ",")
+#climate_data<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByCity.csv", header=TRUE, sep = ",")
+climate_data<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
+climate_data2<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByCountry.csv", header=TRUE, sep = ",")
 
 shinyServer(function(input, output) {
         
@@ -223,12 +226,12 @@ shinyServer(function(input, output) {
         
         #filter the data according to the selected year and month/s
         ymDF<-reactive({
-                        climate_data %>%
+                climate_data2 %>%
                         filter(years %in% SelectedYearMap())%>%
                         filter(mon %in% SelectedMonthMap())
         }) 
         
-        pal <- colorBin("YlOrRd", domain = climate_data$AverageTemperature, bins = 9)
+        pal <- colorBin("YlOrRd", domain = climate_data2$AverageTemperature, bins = 9)
         
         output$worldmap <- renderLeaflet({
                 leaflet(options = leafletOptions(minZoom = 2))
@@ -256,8 +259,8 @@ shinyServer(function(input, output) {
                                                     dashArray = "3",
                                                     fillOpacity = .8,
                                                     bringToFront = TRUE),
-                                            label = ~paste(map$Country,
-                                                           "Average Temperature: ", map$AverageTemperature))
+                                            label = ~paste("Country: ",map$Country,
+                                                           ", Average Temperature: ", map$AverageTemperature))
                         
                 }})
         
@@ -328,14 +331,14 @@ shinyServer(function(input, output) {
                 # If the data changes, the polygons are cleared and redrawn, however, the map (above) is not redrawn
                 leafletProxy("worldmap2",data = map2) %>%
                         clearShapes() %>%
-                        #addCircleMarkers(lng = map2$Longitud,
-                        #                 lat = map2$Latitude,
-                        #                 fillColor = "black",
-                        #                 fillOpacity = 0.5, 
-                        #                 color = "black", 
-                        #                 weight = 1,
-                        #                 popup = borough_popup)  
-                        addMarkers(~map2$Longitud, ~map2$Latitude, popup = borough_popup)
+                        addCircleMarkers(lng = map2$Longitude,
+                                         lat = map2$Latitude,
+                                         fillColor = "black",
+                                         fillOpacity = 0.5, 
+                                         color = "black", 
+                                         weight = 1,
+                                         popup = borough_popup)  
+                        #addMarkers(~map2$Longitude, ~map2$Latitude, popup = borough_popup)
                 
         })
         
