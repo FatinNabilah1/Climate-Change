@@ -9,70 +9,63 @@ library(DT)
 library(rgdal)
 library(leaflet)
 
-#remove NA
-#Load data
-#cmodels_details <- read.csv("C:/Users/User/Documents/modified_file.csv", header=TRUE, sep = ",")
-#saveRDS(A,"C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.rds")
-cmodels_details<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
+#load climate file or data
+climate_data<-read.csv("C:/Users/User/Documents/modified_file1.csv", header=TRUE, sep = ",")
 
 shinyServer(function(input, output) {
         
         #############################INTERACTIVE 1###################################
-        output$overview<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
+        output$overviewIC1<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
  
         
         #read the 100 cities names (the unique values)
-        CityNames<-unique(cmodels_details$City) 
+        CityNames<-unique(climate_data$City) 
         
         #get Country (the unique values)
-        uniqueCountry<-unique(cmodels_details$Country) 
+        uniqueCountry<-unique(climate_data$Country) 
         
         #Cities names list
-        output$CitySelector<-renderUI({
-                selectInput('cities', 'City',
-                            CityNames, 
-                            multiple=TRUE, 
-                            selectize=TRUE, 
-                            selected="Jakarta") #default value
+        output$CitySelectorIC1<-renderUI({
+                                selectInput('cities', 'City',
+                                            CityNames, 
+                                            multiple=TRUE, 
+                                            selectize=TRUE, 
+                                            selected="Jakarta") #default value
         })
         
         #Months abbreviation list
-        output$MonthSelector<-renderUI({
-                selectInput('months', 'Month', 
-                            set_names(c(1:12),month.abb), 
-                            multiple=TRUE, 
-                            selectize=TRUE,
-                            selected=1) #default January
+        output$MonthSelectorIC1<-renderUI({
+                                 selectInput('months', 'Month', 
+                                             set_names(c(1:12),month.abb), 
+                                             multiple=TRUE, 
+                                             selectize=TRUE,
+                                             selected=1) #default January
         })
         
-        #get the selected cities
-        SelectedCity<-reactive({
+        #get the selected cities in Interactive CHart 1
+        SelectedCityIC1<-reactive({
                 
-                if(is.null(input$cities) || length(input$cities)==0)
-                        return()
-                as.vector(input$cities)
+                        if(is.null(input$cities) || length(input$cities)==0)
+                                return()
+                        as.vector(input$cities)
                 
         })
         
-        #get the selected month
-        SelectedMonth<-reactive({
+        #get the selected month in Interactive Chart 1
+        SelectedMonthIC1<-reactive({
                 
-                if(is.null(input$months) || length(input$months)==0)
-                        return()
-                as.numeric(as.vector(input$months))
+                        if(is.null(input$months) || length(input$months)==0)
+                                return()
+                        as.numeric(as.vector(input$months))
                 
         })
         
         #filter the data according to the selected city and month/s
         citiesDF<-reactive({
-                        cmodels_details %>%
-                        filter(City %in% SelectedCity()) %>%
-                        filter(mon %in% SelectedMonth())
+                        climate_data %>%
+                        filter(City %in% SelectedCityIC1()) %>%
+                        filter(mon %in% SelectedMonthIC1())
         }) 
-        
-        output$ff <- renderPrint({
-                names(citiesDF())
-        })
         
         #get Check group input (type of plot)
         checkedVal <- reactive({
@@ -90,7 +83,7 @@ shinyServer(function(input, output) {
         
         output$RegPlotCities<-renderPlot({
                 #check if city and month are not null
-                if ((length(SelectedCity())>0) && (length(SelectedMonth())>0))
+                if ((length(SelectedCityIC1())>0) && (length(SelectedMonthIC1())>0))
                         
                         {g<-ggplot(citiesDF(),
                                    aes(x=years,y=AverageTemperature,
@@ -115,13 +108,13 @@ shinyServer(function(input, output) {
                                                }
         })
         ############################ INTERACTIVE 2 #######################################
-        output$overview1<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
+        output$overviewIC2<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
         
         #get Years (the unique values)
-        uniqueYears<-sort(unique(cmodels_details$years)) 
+        uniqueYears<-sort(unique(climate_data$years)) 
         
         #City names list
-        output$CitysSelector<-renderUI({
+        output$CitySelectorIC2<-renderUI({
                 selectInput('citys', 'City',
                             CityNames, 
                             multiple=TRUE, 
@@ -130,7 +123,7 @@ shinyServer(function(input, output) {
         })
         
         #Year list
-        output$yearSelector<-renderUI({
+        output$YearSelectorIC2<-renderUI({
                 selectInput('years', 'Year',
                             uniqueYears, 
                             multiple=FALSE, 
@@ -138,8 +131,8 @@ shinyServer(function(input, output) {
                             selected="1984") #default value
         })
         
-        #get the selected country
-        SelectedCitys<-reactive({
+        #get the selected city
+        SelectedCityIC2<-reactive({
                 
                 if(is.null(input$citys) || length(input$citys)==0)
                         return()
@@ -147,29 +140,27 @@ shinyServer(function(input, output) {
                 
         })
         
-        #get the selected Years
-        SelectedYear<-reactive({
+        #get the selected years
+        SelectedYearIC2<-reactive({
                 
                 if(is.null(input$years) || length(input$years)==0)
                         return()
-                as.vector(input$years)
+                as.numeric(as.vector(input$years))
                 
         })
         
-        
         #filter the data according to the selected country
-        citysDF<-reactive({
-                cmodels_details %>%
-                        filter(City %in% SelectedCitys()) %>%
-                        filter(years %in% SelectedYear())
+        countryDF<-reactive({
+                climate_data %>%
+                        filter(years %in% SelectedYearIC2())%>%
+                        filter(City %in% SelectedCityIC2())
         }) 
         
-        ############################INTERACTIVE 2 PLOT###################################
         output$RegPlotCountry<-renderPlot({
-                #check if country are not null
-                if ((length(SelectedCitys())>0))
+                #check if city are not null
+                if ((length(SelectedCityIC2())>0))
                         
-                {g<-ggplot(citysDF(),
+                {g<-ggplot(countryDF(),
                            aes(x=factor(mon),y=AverageTemperature,
                            color = City, group = City))+
                     geom_line(size = 2, alpha = 0.75) +
@@ -184,89 +175,167 @@ shinyServer(function(input, output) {
                 g
                 }
         })
+        
         #############################DATA EXPLORER###################################
+        
         output$climatetable = DT::renderDataTable({
-                cmodels_details
+                climate_data
         })
         
         ############################## WORLD MAP ####################################
         
-        #Cities names list
-        output$CitySelector1<-renderUI({
-                selectInput('cities1', 'City',
-                            CityNames, 
+        #Months abbreviation list
+        output$MonthMapSelector<-renderUI({
+                selectInput('monthMap', 'Month', 
+                            set_names(c(1:12),month.abb), 
                             multiple=FALSE, 
-                            selectize=TRUE, 
-                            selected="Jakarta") #default value
+                            selectize=TRUE,
+                            selected=1) #default January
         })
         
         #Years list
-        output$YearsSelector<-renderUI({
-                selectInput('years', 'Years',
+        output$YearMapSelector<-renderUI({
+                selectInput('yearMap', 'Year',
                             uniqueYears, 
                             multiple=FALSE, 
                             selectize=TRUE, 
-                            selected=1984) #default value
+                            selected="1984") #default value
         })
         
         
-        #get the selected cities
-        SelectedCity1<-reactive({
+        #get the selected Month
+        SelectedMonthMap<-reactive({
                 
-                if(is.null(input$cities1) || length(input$cities1)==0)
+                if(is.null(input$monthMap) || length(input$monthMap)==0)
                         return()
-                as.vector(input$cities1)
+                as.numeric(as.vector(input$monthMap))
                 
         })
         
         #get the selected years
-        SelectedYears<-reactive({
+        SelectedYearMap<-reactive({
                 
-                if(is.null(input$years) || length(input$years)==0)
+                if(is.null(input$yearMap) || length(input$yearMap)==0)
                         return()
-                as.numeric(as.vector(input$years))
+                as.numeric(as.vector(input$yearMap))
                 
         })
         
-        #filter the data according to the selected city and month/s
-        citiesDF1<-reactive({
-                cmodels_details %>%
-                        filter(City %in% SelectedCity1()) %>%
-                        filter(years %in% SelectedYears())
+        #filter the data according to the selected year and month/s
+        ymDF<-reactive({
+                        climate_data %>%
+                        filter(years %in% SelectedYearMap())%>%
+                        filter(mon %in% SelectedMonthMap())
         }) 
         
+        pal <- colorBin("YlOrRd", domain = climate_data$AverageTemperature, bins = 9)
+        
+        output$worldmap <- renderLeaflet({
+                leaflet(options = leafletOptions(minZoom = 2))
+                
+        })
+        
+        observe({
+                if(!is.null(input$yearMap)){
+                        map <- joinCountryData2Map(ymDF()
+                                                   , joinCode = "ISO3"
+                                                   , nameJoinColumn = "ISO3V10")
+                        
+                        leafletProxy("worldmap", data = map) %>%
+                                addTiles() %>% 
+                                clearShapes() %>% 
+                                addPolygons(fillColor = ~pal(map$AverageTemperature),
+                                            weight = 2,
+                                            opacity = 1,
+                                            color = "white",
+                                            dashArray = "3",
+                                            fillOpacity = 0.7,
+                                            highlight = highlightOptions(
+                                                    weight = 5,
+                                                    color = "white",
+                                                    dashArray = "3",
+                                                    fillOpacity = .8,
+                                                    bringToFront = TRUE),
+                                            label = ~paste(map$Country,
+                                                           "Average Temperature: ", map$AverageTemperature))
+                        
+                }})
+        
+        ################################################################################################
+        
+        #Months abbreviation list
+        output$MonthMap2Selector<-renderUI({
+                selectInput('monthMap2', 'Month', 
+                            set_names(c(1:12),month.abb), 
+                            multiple=FALSE, 
+                            selectize=TRUE,
+                            selected=1) #default January
+        })
+        
+        #Years list
+        output$YearMap2Selector<-renderUI({
+                selectInput('yearMap2', 'Year',
+                            uniqueYears, 
+                            multiple=FALSE, 
+                            selectize=TRUE, 
+                            selected="1984") #default value
+        })
+        
+        
+        #get the selected Month
+        SelectedMonthMap2<-reactive({
+                
+                if(is.null(input$monthMap2) || length(input$monthMap2)==0)
+                        return()
+                as.numeric(as.vector(input$monthMap2))
+                
+        })
+        
+        #get the selected years
+        SelectedYearMap2<-reactive({
+                
+                if(is.null(input$yearMap2) || length(input$yearMap2)==0)
+                        return()
+                as.numeric(as.vector(input$yearMap2))
+                
+        })
+        
+        #filter the data according to the selected year and month/s
+        ymDF2<-reactive({
+                climate_data %>%
+                        filter(years %in% SelectedYearMap2())%>%
+                        filter(mon %in% SelectedMonthMap2())
+        }) 
         
         # Due to use of leafletProxy below, this should only be called once
-        output$worldmap<-renderLeaflet({
-                
-                leaflet() %>%
+        output$worldmap2<-renderLeaflet({
+                leaflet(options = leafletOptions(minZoom = 1.8)) %>%
                         addTiles()    
         })
         
         
         
         observe({
-                theData<-citiesDF1() 
-                
-                # colour palette mapped to data
-                pal <- colorQuantile("YlGn", theData$AverageTemperature, n = 9) 
+                map2<-ymDF2() 
                 
                 # set text for the clickable popup labels
                 borough_popup <- paste0("<strong>City: </strong>", 
-                                        theData$City, 
+                                        map2$City, 
                                         "<br><strong>
-                            Average Temp: </strong>", theData$AverageTemperature
+                            Average Temp: </strong>", map2$AverageTemperature
                 )
                 
                 # If the data changes, the polygons are cleared and redrawn, however, the map (above) is not redrawn
-                leafletProxy("worldmap") %>%
+                leafletProxy("worldmap2",data = map2) %>%
                         clearShapes() %>%
-                        addPolygons(lng = theData$Longitud,
-                                    lat = theData$Latitude,
-                                    fillOpacity = 0.8, 
-                                    color = "black", 
-                                    weight = 2,
-                                    popup = borough_popup)  
+                        #addCircleMarkers(lng = map2$Longitud,
+                        #                 lat = map2$Latitude,
+                        #                 fillColor = "black",
+                        #                 fillOpacity = 0.5, 
+                        #                 color = "black", 
+                        #                 weight = 1,
+                        #                 popup = borough_popup)  
+                        addMarkers(~map2$Longitud, ~map2$Latitude, popup = borough_popup)
                 
         })
         
