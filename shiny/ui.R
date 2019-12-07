@@ -16,10 +16,10 @@ shinyUI(fluidPage(
         
                         sidebarPanel(
                                 helpText("Select one or more cities:"),
-                                uiOutput("CitySelector"),
+                                uiOutput("CitySelectorIC1"),
                                 
                                 helpText("Select one or more months:"),
-                                uiOutput("MonthSelector"),
+                                uiOutput("MonthSelectorIC1"),
                                 
                                 helpText("Select type of plot:"),
                                 
@@ -48,11 +48,11 @@ shinyUI(fluidPage(
                             
                             sidebarPanel(
                                     helpText("Select one or more country:"),
-                                    uiOutput("CitysSelector"),
+                                    uiOutput("CitySelectorIC2"),
                                     
                                     
                                     helpText("Select years:"),
-                                    uiOutput("yearSelector"),
+                                    uiOutput("YearSelectorIC2"),
                             ),
                             
                             #Main Panel contains the plot/s
@@ -70,10 +70,10 @@ shinyUI(fluidPage(
                     sidebarLayout(
                             
                             sidebarPanel(
-                                    helpText("Select one cities:"),
-                                    uiOutput("CitySelector1"),
+                                    helpText("Select month:"),
+                                    uiOutput("MonthMapSelector"),
                                     helpText("Select years:"),
-                                    uiOutput("YearsSelector")
+                                    uiOutput("YearMapSelector")
                                         
                            
                     ),
@@ -81,5 +81,21 @@ shinyUI(fluidPage(
                     mainPanel(
                             leafletOutput("worldmap", height=400)
                     ))
+        ),
+        tabPanel("World Map 2",
+                 sidebarLayout(
+                         
+                         sidebarPanel(
+                                 helpText("Select month:"),
+                                 uiOutput("MonthMap2Selector"),
+                                 helpText("Select years:"),
+                                 uiOutput("YearMap2Selector")
+                                 
+                                 
+                         ),
+                         #Main Panel contains the plot/s
+                         mainPanel(
+                                 leafletOutput("worldmap2", height=400)
+                         ))
         ))
 ))
