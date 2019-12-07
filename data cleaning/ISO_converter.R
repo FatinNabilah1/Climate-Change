@@ -54,8 +54,7 @@ for (i in 1:length(old_names)){
   
 }
 #create new column in climate data file, and match the ISO code with the new name of country
-climate_data['ISO3'] <- iso_codes$ISO3[match(climate_data$Country, iso_codes$Country)]
-climate_data['ISO3'] <- iso_codes$ISO3[match(climate_data$Country, iso_codes$Country)]
+climate_data['ISO3V10'] <- iso_codes$ISO3[match(climate_data$Country, iso_codes$Country)]
 world_data["ISO3"] <- iso_codes$ISO3[match(world_data$region, iso_codes$Country)]
 
 write.csv(climate_data, "modified_file1.csv" ,row.names=FALSE)
