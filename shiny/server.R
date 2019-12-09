@@ -235,7 +235,7 @@ shinyServer(function(input, output) {
         output$worldmap <- renderLeaflet({
                 leaflet(options = leafletOptions(minZoom = 2))%>%
                         addLegend("bottomright", pal = pal, values = climate_data2$AverageTemperature,
-                                  title = "Temperature Rage",
+                                  title = "Temperature Range",
                                   opacity = 1)
                 
         })
