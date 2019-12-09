@@ -10,10 +10,9 @@ library(rgdal)
 library(leaflet)
 library(rworldmap)
 
-#load climate file or data
-#climate_data<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByCity.csv", header=TRUE, sep = ",")
-climate_data<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
-climate_data2<-read.csv("C:/Users/User/Documents/GlobalLandTemperaturesByCountry.csv", header=TRUE, sep = ",")
+#climate_data<-read.csv("GlobalLandTemperaturesByCity.csv", header=TRUE, sep = ",")
+climate_data<-read.csv("GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
+climate_data2<-read.csv("GlobalLandTemperaturesByCountry.csv", header=TRUE, sep = ",")
 
 shinyServer(function(input, output) {
         
@@ -23,9 +22,6 @@ shinyServer(function(input, output) {
         
         #read the 100 cities names (the unique values)
         CityNames<-unique(climate_data$City) 
-        
-        #get Country (the unique values)
-        uniqueCountry<-unique(climate_data$Country) 
         
         #Cities names list
         output$CitySelectorIC1<-renderUI({
@@ -110,36 +106,39 @@ shinyServer(function(input, output) {
                         g
                                                }
         })
-        ############################ INTERACTIVE 2 #######################################
+        ############################ INTERACTIVE CHART 2 #######################################
         output$overviewIC2<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
         
-        #get Years (the unique values)
-        uniqueYears<-sort(unique(climate_data$years)) 
+        #get Years from data set Country (the unique values)
+        uniqueYearsCountry<-sort(unique(climate_data2$years)) 
+        
+        #get country (the unique values)
+        CountryNames<-sort(unique(climate_data2$Country)) 
         
         #City names list
-        output$CitySelectorIC2<-renderUI({
-                selectInput('citys', 'City',
-                            CityNames, 
+        output$CountrySelectorIC2<-renderUI({
+                selectInput('country', 'Country',
+                            CountryNames, 
                             multiple=TRUE, 
                             selectize=TRUE, 
-                            selected="Jakarta") #default value
+                            selected="Indonesia") #default value
         })
         
         #Year list
         output$YearSelectorIC2<-renderUI({
                 selectInput('years', 'Year',
-                            uniqueYears, 
+                            uniqueYearsCountry, 
                             multiple=FALSE, 
                             selectize=TRUE, 
                             selected="1984") #default value
         })
         
         #get the selected city
-        SelectedCityIC2<-reactive({
+        SelectedCountryIC2<-reactive({
                 
-                if(is.null(input$citys) || length(input$citys)==0)
+                if(is.null(input$country) || length(input$country)==0)
                         return()
-                as.vector(input$citys)
+                as.vector(input$country)
                 
         })
         
@@ -154,22 +153,23 @@ shinyServer(function(input, output) {
         
         #filter the data according to the selected country
         countryDF<-reactive({
-                climate_data %>%
+                climate_data2 %>%
                         filter(years %in% SelectedYearIC2())%>%
-                        filter(City %in% SelectedCityIC2())
+                        filter(Country %in% SelectedCountryIC2())
         }) 
         
         output$RegPlotCountry<-renderPlot({
                 #check if city are not null
-                if ((length(SelectedCityIC2())>0))
+                if ((length(SelectedCountryIC2())>0))
                         
                 {g<-ggplot(countryDF(),
                            aes(x=factor(mon),y=AverageTemperature,
-                           color = City, group = City))+
+                           color = Country, group = Country))+
+                        ylim(0,40)+
                     geom_line(size = 2, alpha = 0.75) +
                     geom_point(size =3, alpha = 0.75) +
                         
-                    ggtitle("Average Temperature per Years by City") +
+                    ggtitle("Average Temperature per Years by Selected Country") +
                     labs(x="month",y="Average Temperature")+
                     theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=32, hjust=0.5)) +
                     theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
@@ -179,30 +179,30 @@ shinyServer(function(input, output) {
                 }
         })
         
-        #############################DATA EXPLORER###################################
-        
-        output$climatetable = DT::renderDataTable({
-                climate_data
-        })
-        
         ############################## WORLD MAP ####################################
         
         #Months abbreviation list
         output$MonthMapSelector<-renderUI({
-                selectInput('monthMap', 'Month', 
-                            set_names(c(1:12),month.abb), 
-                            multiple=FALSE, 
-                            selectize=TRUE,
-                            selected=1) #default January
+                sliderInput("monthMap",
+                            "Month:",
+                            min = 1,
+                            max = 12,
+                            value = 1,
+                            step = 1,
+                            width = "100%")
         })
+        
+        
         
         #Years list
         output$YearMapSelector<-renderUI({
-                selectInput('yearMap', 'Year',
-                            uniqueYears, 
-                            multiple=FALSE, 
-                            selectize=TRUE, 
-                            selected="1984") #default value
+                sliderInput("yearMap",
+                            "Year:",
+                            min = min(uniqueYearsCountry),
+                            max = max(uniqueYearsCountry),
+                            value = 1,
+                            step = 1,
+                            width = "100%")
         })
         
         
@@ -231,7 +231,7 @@ shinyServer(function(input, output) {
                         filter(mon %in% SelectedMonthMap())
         }) 
         
-        pal <- colorBin("YlOrRd", domain = climate_data2$AverageTemperature, bins = 9)
+        pal <- colorBin(rev(RColorBrewer::brewer.pal(10,'RdYlBu')), domain = climate_data2$AverageTemperature, bins = 9)
         
         output$worldmap <- renderLeaflet({
                 leaflet(options = leafletOptions(minZoom = 2))
@@ -252,19 +252,29 @@ shinyServer(function(input, output) {
                                             opacity = 1,
                                             color = "white",
                                             dashArray = "3",
-                                            fillOpacity = 0.7,
+                                            fillOpacity = 1,
                                             highlight = highlightOptions(
                                                     weight = 5,
                                                     color = "white",
                                                     dashArray = "3",
-                                                    fillOpacity = .8,
+                                                    fillOpacity = 100,
                                                     bringToFront = TRUE),
                                             label = ~paste("Country: ",map$Country,
                                                            ", Average Temperature: ", map$AverageTemperature))
                         
                 }})
         
-        ################################################################################################
+        
+        #############################DATA EXPLORER###################################
+        
+        output$climatetable = DT::renderDataTable({
+                climate_data
+        })
+        
+        #####################################WORLD MAP 2###############################################
+        
+        #get Years from data set Major City (the unique values)
+        uniqueYearsCity<-sort(unique(climate_data$years)) 
         
         #Months abbreviation list
         output$MonthMap2Selector<-renderUI({
@@ -278,7 +288,7 @@ shinyServer(function(input, output) {
         #Years list
         output$YearMap2Selector<-renderUI({
                 selectInput('yearMap2', 'Year',
-                            uniqueYears, 
+                            uniqueYearsCity, 
                             multiple=FALSE, 
                             selectize=TRUE, 
                             selected="1984") #default value
@@ -331,14 +341,14 @@ shinyServer(function(input, output) {
                 # If the data changes, the polygons are cleared and redrawn, however, the map (above) is not redrawn
                 leafletProxy("worldmap2",data = map2) %>%
                         clearShapes() %>%
-                        addCircleMarkers(lng = map2$Longitude,
-                                         lat = map2$Latitude,
-                                         fillColor = "black",
-                                         fillOpacity = 0.5, 
-                                         color = "black", 
-                                         weight = 1,
-                                         popup = borough_popup)  
-                        #addMarkers(~map2$Longitude, ~map2$Latitude, popup = borough_popup)
+                        #addCircleMarkers(lng = map2$Longitude,
+                        #                 lat = map2$Latitude,
+                        #                 fillColor = "black",
+                        #                 fillOpacity = 0.5, 
+                        #                 color = "black", 
+                        #                 weight = 1,
+                        #                 popup = borough_popup)  
+                        addMarkers(~map2$Longitude, ~map2$Latitude, popup = borough_popup)
                 
         })
         
