@@ -3,12 +3,13 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(leaflet)
+library(shinythemes)
 
 # Define UI for miles per gallon application
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme = shinytheme("flatly"),
         
         # Application title
-        titlePanel("Climate Change Temperature Analysis"),
+        titlePanel("Global Climate Change (Temperature) Analysis"),
         navbarPage("", id="nav",
            tabPanel("Interactive Chart 1",
                 # Sidebar with controls to select city, month and type of plot
@@ -79,7 +80,7 @@ shinyUI(fluidPage(
                     ),
                     #Main Panel contains the plot/s
                     mainPanel(
-                            leafletOutput("worldmap", height=600)
+                            leafletOutput("worldmap", height=500)
                     ))
         ),
         tabPanel("World Map 2",
@@ -95,7 +96,7 @@ shinyUI(fluidPage(
                          ),
                          #Main Panel contains the plot/s
                          mainPanel(
-                                 leafletOutput("worldmap2", height=400)
+                                 leafletOutput("worldmap2", height=500)
                          ))
         ))
 ))
