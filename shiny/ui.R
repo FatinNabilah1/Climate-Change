@@ -8,7 +8,7 @@ library(leaflet)
 shinyUI(fluidPage(
         
         # Application title
-        titlePanel("Climate Change in Major Country"),
+        titlePanel("Climate Change Temperature Analysis"),
         navbarPage("", id="nav",
            tabPanel("Interactive Chart 1",
                 # Sidebar with controls to select city, month and type of plot
@@ -43,12 +43,12 @@ shinyUI(fluidPage(
                         )
            ),
            tabPanel("Interactive Chart 2",
-                    # Sidebar with controls to select City and year
+                    # Sidebar with controls to select Country and year
                     sidebarLayout(
                             
                             sidebarPanel(
                                     helpText("Select one or more country:"),
-                                    uiOutput("CitySelectorIC2"),
+                                    uiOutput("CountrySelectorIC2"),
                                     
                                     
                                     helpText("Select years:"),
@@ -79,7 +79,7 @@ shinyUI(fluidPage(
                     ),
                     #Main Panel contains the plot/s
                     mainPanel(
-                            leafletOutput("worldmap", height=400)
+                            leafletOutput("worldmap", height=600)
                     ))
         ),
         tabPanel("World Map 2",
