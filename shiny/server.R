@@ -1,4 +1,3 @@
-#Load Libraries
 library(shiny)
 library(ggplot2)
 library(dplyr)
@@ -18,50 +17,50 @@ shinyServer(function(input, output) {
         
         #############################INTERACTIVE 1###################################
         output$overviewIC1<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
- 
+        
         
         #read the 100 cities names (the unique values)
         CityNames<-unique(climate_data$City) 
         
         #Cities names list
         output$CitySelectorIC1<-renderUI({
-                                selectInput('cities', 'City',
-                                            CityNames, 
-                                            multiple=TRUE, 
-                                            selectize=TRUE, 
-                                            selected="Jakarta") #default value
+                selectInput('cities', 'City',
+                            CityNames, 
+                            multiple=TRUE, 
+                            selectize=TRUE, 
+                            selected="Jakarta") #default value
         })
         
         #Months abbreviation list
         output$MonthSelectorIC1<-renderUI({
-                                 selectInput('months', 'Month', 
-                                             set_names(c(1:12),month.abb), 
-                                             multiple=TRUE, 
-                                             selectize=TRUE,
-                                             selected=1) #default January
+                selectInput('months', 'Month', 
+                            set_names(c(1:12),month.abb), 
+                            multiple=TRUE, 
+                            selectize=TRUE,
+                            selected=1) #default January
         })
         
         #get the selected cities in Interactive CHart 1
         SelectedCityIC1<-reactive({
                 
-                        if(is.null(input$cities) || length(input$cities)==0)
-                                return()
-                        as.vector(input$cities)
+                if(is.null(input$cities) || length(input$cities)==0)
+                        return()
+                as.vector(input$cities)
                 
         })
         
         #get the selected month in Interactive Chart 1
         SelectedMonthIC1<-reactive({
                 
-                        if(is.null(input$months) || length(input$months)==0)
-                                return()
-                        as.numeric(as.vector(input$months))
+                if(is.null(input$months) || length(input$months)==0)
+                        return()
+                as.numeric(as.vector(input$months))
                 
         })
         
         #filter the data according to the selected city and month/s
         citiesDF<-reactive({
-                        climate_data %>%
+                climate_data %>%
                         filter(City %in% SelectedCityIC1()) %>%
                         filter(mon %in% SelectedMonthIC1())
         }) 
@@ -69,7 +68,7 @@ shinyServer(function(input, output) {
         #get Check group input (type of plot)
         checkedVal <- reactive({
                 as.vector(input$checkPlot)
-             
+                
         }) 
         
         #get Check group input (type of plot)
@@ -84,27 +83,27 @@ shinyServer(function(input, output) {
                 #check if city and month are not null
                 if ((length(SelectedCityIC1())>0) && (length(SelectedMonthIC1())>0))
                         
-                        {g<-ggplot(citiesDF(),
-                                   aes(x=years,y=AverageTemperature,
-                                       colour=factor(mon)))+
-                                labs(x="Year",
-                                     y="Average Temperature")+
-                                facet_wrap(~City)+
-                                scale_color_discrete(name="Month",
-                                                     breaks=c(1:12),
-                                                     labels=month.abb)
+                {g<-ggplot(citiesDF(),
+                           aes(x=years,y=AverageTemperature,
+                               colour=factor(mon)))+
+                        labs(x="Year",
+                             y="Average Temperature")+
+                        facet_wrap(~City)+
+                        scale_color_discrete(name="Month",
+                                             breaks=c(1:12),
+                                             labels=month.abb)
+                
+                if ("GAM Plot" %in% checkedVal())
                         
-                        if ("GAM Plot" %in% checkedVal())
-
-                                g<-g+stat_smooth(method="gam", formula=y~s(x),se=FALSE)
+                        g<-g+stat_smooth(method="gam", formula=y~s(x),se=FALSE)
+                
+                if ("Point Plot" %in% checkedVal())
                         
-                        if ("Point Plot" %in% checkedVal())
-                                
-                                g<-g+geom_point(aes(alpha=0.4))+
-                                        guides(alpha=FALSE)
-                        
-                        g
-                                               }
+                        g<-g+geom_point(aes(alpha=0.4))+
+                                guides(alpha=FALSE)
+                
+                g
+                }
         })
         ############################ INTERACTIVE CHART 2 #######################################
         output$overviewIC2<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
@@ -164,16 +163,16 @@ shinyServer(function(input, output) {
                         
                 {g<-ggplot(countryDF(),
                            aes(x=factor(mon),y=AverageTemperature,
-                           color = Country, group = Country))+
+                               color = Country, group = Country))+
                         ylim(0,40)+
-                    geom_line(size = 2, alpha = 0.75) +
-                    geom_point(size =3, alpha = 0.75) +
+                        geom_line(size = 2, alpha = 0.75) +
+                        geom_point(size =3, alpha = 0.75) +
                         
-                    ggtitle("Average Temperature per Years by Selected Country") +
-                    labs(x="month",y="Average Temperature")+
-                    theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=32, hjust=0.5)) +
-                    theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
-                    theme_classic()
+                        ggtitle("Average Temperature per Years by Selected Country") +
+                        labs(x="month",y="Average Temperature")+
+                        theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=32, hjust=0.5)) +
+                        theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
+                        theme_classic()
                 
                 g
                 }
@@ -260,17 +259,22 @@ shinyServer(function(input, output) {
                                                     fillOpacity = 100,
                                                     bringToFront = TRUE),
                                             label = ~paste("Country: ",map$Country,
-                                                           ", Average Temperature: ", map$AverageTemperature))
+                                                           ", Average Temperature: ", map$AverageTemperature))%>%
+                                addLegend("bottomright", pal = pal, values = map$AverageTemperature,
+                                          title = "Temperature Rage",
+                                          opacity = 1)
                         
                 }})
         
         
         #############################DATA EXPLORER###################################
         
-        output$climatetable = DT::renderDataTable({
+        output$climatetableCity = DT::renderDataTable({
                 climate_data
         })
-        
+        output$climatetableCountry = DT::renderDataTable({
+                climate_data2
+        })
         #####################################WORLD MAP 2###############################################
         
         #get Years from data set Major City (the unique values)
