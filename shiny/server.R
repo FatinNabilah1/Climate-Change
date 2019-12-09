@@ -233,7 +233,10 @@ shinyServer(function(input, output) {
         pal <- colorBin(rev(RColorBrewer::brewer.pal(10,'RdYlBu')), domain = climate_data2$AverageTemperature, bins = 9)
         
         output$worldmap <- renderLeaflet({
-                leaflet(options = leafletOptions(minZoom = 2))
+                leaflet(options = leafletOptions(minZoom = 2))%>%
+                        addLegend("bottomright", pal = pal, values = climate_data2$AverageTemperature,
+                                  title = "Temperature Rage",
+                                  opacity = 1)
                 
         })
         
@@ -259,10 +262,7 @@ shinyServer(function(input, output) {
                                                     fillOpacity = 100,
                                                     bringToFront = TRUE),
                                             label = ~paste("Country: ",map$Country,
-                                                           ", Average Temperature: ", map$AverageTemperature))%>%
-                                addLegend("bottomright", pal = pal, values = map$AverageTemperature,
-                                          title = "Temperature Rage",
-                                          opacity = 1)
+                                                           ", Average Temperature: ", map$AverageTemperature))
                         
                 }})
         
