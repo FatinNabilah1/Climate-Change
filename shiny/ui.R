@@ -8,7 +8,7 @@ library(shinythemes)
 shinyUI(fluidPage(theme = shinytheme("flatly"),
                   
                   # Application title
-                  titlePanel("Global Climate Change (Temperature) Analysis"),
+                  titlePanel("Global Climate Change (Analysis of Earth Surface Temperature)"),
                   navbarPage("", id="nav",
                              navbarMenu("Interactive Chart",
                                      tabPanel("Interactive Chart Major City",
@@ -37,13 +37,11 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       
                                                       #Main Panel contains the plot/s
                                                       mainPanel(
-                                                              
-                                                              textOutput("overview"),
                                                               plotOutput("RegPlotCities")
                                                       )
                                               )
                                      ),
-                                     tabPanel("Interactive Chart COuntry",
+                                     tabPanel("Interactive Chart Country",
                                               # Sidebar with controls to select Country and year
                                               sidebarLayout(
                                                       
@@ -58,8 +56,6 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       
                                                       #Main Panel contains the plot/s
                                                       mainPanel(
-                                                              
-                                                              textOutput("overview1"),
                                                               plotOutput("RegPlotCountry")
                                                       )
                                               ))),
@@ -74,6 +70,22 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       DT::dataTableOutput("climatetableCountry")
                                               ))),
                              navbarMenu("World Map",
+                                     tabPanel("World Map Major City",
+                                               sidebarLayout(
+                                                 
+                                               sidebarPanel(
+                                               helpText("Select month:"),
+                                               uiOutput("MonthMap2Selector"),
+                                               helpText("Select years:"),
+                                               uiOutput("YearMap2Selector")
+                                                     
+                                                     
+                                               ),
+                                              #Main Panel contains the plot/s
+                                              mainPanel(
+                                              leafletOutput("worldmap2", height=500)
+                                              ))
+                                     ),
                                      tabPanel("World Map Country",
                                               sidebarLayout(
                                                       
@@ -88,22 +100,6 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       #Main Panel contains the plot/s
                                                       mainPanel(
                                                               leafletOutput("worldmap", height=500)
-                                                      ))
-                                     ),
-                                     tabPanel("World Map Major CIty",
-                                              sidebarLayout(
-                                                      
-                                                      sidebarPanel(
-                                                              helpText("Select month:"),
-                                                              uiOutput("MonthMap2Selector"),
-                                                              helpText("Select years:"),
-                                                              uiOutput("YearMap2Selector")
-                                                              
-                                                              
-                                                      ),
-                                                      #Main Panel contains the plot/s
-                                                      mainPanel(
-                                                              leafletOutput("worldmap2", height=500)
                                                       ))
                                      )))
 ))
