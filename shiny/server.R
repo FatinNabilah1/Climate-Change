@@ -16,9 +16,6 @@ climate_data2<-read.csv("GlobalLandTemperaturesByCountry.csv", header=TRUE, sep 
 shinyServer(function(input, output) {
         
         #############################INTERACTIVE 1###################################
-        output$overviewIC1<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
-        
-        
         #read the 100 cities names (the unique values)
         CityNames<-unique(climate_data$City) 
         
@@ -106,8 +103,6 @@ shinyServer(function(input, output) {
                 }
         })
         ############################ INTERACTIVE CHART 2 #######################################
-        output$overviewIC2<-renderText("This Shiny App provides a fast and easy way to explore the \"Earth Surface Temperature Data\" published on Kaggle")
-        
         #get Years from data set Country (the unique values)
         uniqueYearsCountry<-sort(unique(climate_data2$years)) 
         
