@@ -8,6 +8,7 @@ library(DT)
 library(rgdal)
 library(leaflet)
 library(rworldmap)
+library(plotly)
 
 #climate_data<-read.csv("GlobalLandTemperaturesByCity.csv", header=TRUE, sep = ",")
 climate_data<-read.csv("GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
@@ -152,13 +153,15 @@ shinyServer(function(input, output) {
                         filter(Country %in% SelectedCountryIC2())
         }) 
         
-        output$RegPlotCountry<-renderPlot({
+        output$RegPlotCountry<-renderPlotly({
                 #check if city are not null
                 if ((length(SelectedCountryIC2())>0))
                         
                 {g<-ggplot(countryDF(),
                            aes(x=factor(mon),y=AverageTemperature,
-                               color = Country, group = Country))+
+                               color = Country, group = Country,
+                               text = paste("Average Temperature: ", AverageTemperature,
+                                            "<br>Country: ", Country)))+
                         ylim(0,40)+
                         geom_line(size = 2, alpha = 0.75) +
                         geom_point(size =3, alpha = 0.75) +
@@ -169,7 +172,7 @@ shinyServer(function(input, output) {
                         theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
                         theme_classic()
                 
-                g
+                ggplotly(g, tooltip = "text")
                 }
         })
         
