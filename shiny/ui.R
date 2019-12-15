@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(leaflet)
 library(shinythemes)
+library(plotly)
 
 # Define UI for miles per gallon application
 shinyUI(fluidPage(theme = shinytheme("flatly"),
@@ -56,7 +57,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       
                                                       #Main Panel contains the plot/s
                                                       mainPanel(
-                                                              plotOutput("RegPlotCountry")
+                                                          plotlyOutput("RegPlotCountry")
                                                       )
                                               ))),
                              
