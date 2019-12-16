@@ -9,14 +9,35 @@ library(rgdal)
 library(leaflet)
 library(rworldmap)
 library(plotly)
+library(knitr)
 
-#climate_data<-read.csv("GlobalLandTemperaturesByCity.csv", header=TRUE, sep = ",")
+#Load data set
 climate_data<-read.csv("GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
 climate_data2<-read.csv("GlobalLandTemperaturesByCountry.csv", header=TRUE, sep = ",")
+sea_level <- read.csv("epa-sea-level_csv.csv", header = TRUE, sep = ",")
+CO2 <- read.table("CO2_level.txt", header = TRUE, "\t")
 
 shinyServer(function(input, output) {
         
-        #############################INTERACTIVE 1###################################
+        output$markdownICCountry <- renderUI({
+                
+                HTML(markdown::markdownToHTML("ICCountry-Description.Rmd", fragment.only=TRUE))
+                
+        })
+        
+        
+        output$markdownmapCity <- renderUI({
+                
+                HTML(markdown::markdownToHTML("MapCity-Description.Rmd", fragment.only=TRUE))
+                
+        })
+        
+        output$markdownmapCountry <- renderUI({
+                
+                HTML(markdown::markdownToHTML("MapCountry-Description.Rmd", fragment.only=TRUE))
+                
+        })
+        
         #read the 100 cities names (the unique values)
         CityNames<-unique(climate_data$City) 
         
@@ -75,7 +96,9 @@ shinyServer(function(input, output) {
                 
         }) 
         
-        #############################INTERACTIVE 1 PLOT###################################
+        
+        
+        ############################ INTERACTIVE CHART 1 #######################################
         
         output$RegPlotCities<-renderPlot({
                 #check if city and month are not null
@@ -110,13 +133,22 @@ shinyServer(function(input, output) {
         #get country (the unique values)
         CountryNames<-sort(unique(climate_data2$Country)) 
         
-        #City names list
+        #COuntry names list
         output$CountrySelectorIC2<-renderUI({
                 selectInput('country', 'Country',
                             CountryNames, 
                             multiple=TRUE, 
                             selectize=TRUE, 
                             selected="Indonesia") #default value
+        })
+        
+        #get the selected Country
+        SelectedCountryIC2<-reactive({
+                
+                if(is.null(input$country) || length(input$country)==0)
+                        return()
+                as.vector(input$country)
+                
         })
         
         #Year list
@@ -126,15 +158,6 @@ shinyServer(function(input, output) {
                             multiple=FALSE, 
                             selectize=TRUE, 
                             selected="1984") #default value
-        })
-        
-        #get the selected city
-        SelectedCountryIC2<-reactive({
-                
-                if(is.null(input$country) || length(input$country)==0)
-                        return()
-                as.vector(input$country)
-                
         })
         
         #get the selected years
@@ -161,13 +184,15 @@ shinyServer(function(input, output) {
                            aes(x=factor(mon),y=AverageTemperature,
                                color = Country, group = Country,
                                text = paste("Average Temperature: ", AverageTemperature,
-                                            "<br>Country: ", Country)))+
+                                            "<br>Country: ", Country,
+                                            "<br>Month: ", factor(mon),
+                                            "<br>Year: ", years)))+
                         ylim(0,40)+
-                        geom_line(size = 2, alpha = 0.75) +
-                        geom_point(size =3, alpha = 0.75) +
+                        geom_line(size = 1, alpha = 0.75) +
+                        geom_point(size =1, alpha = 0.75) +
                         
                         ggtitle("Average Temperature per Years by Selected Country") +
-                        labs(x="month",y="Average Temperature")+
+                        labs(x="Month",y="Average Temperature")+
                         theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=32, hjust=0.5)) +
                         theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=22))+
                         theme_classic()
@@ -176,7 +201,19 @@ shinyServer(function(input, output) {
                 }
         })
         
-        ############################## WORLD MAP ####################################
+        
+        #############################DATA EXPLORER###################################
+        #Data explorer for Major City data
+        output$climatetableCity = DT::renderDataTable({
+                climate_data
+        })
+        
+        #Data explorer for Country data
+        output$climatetableCountry = DT::renderDataTable({
+                climate_data2
+        })
+        
+        ############################## WORLD MAP Major CIty Data ####################################
         
         #Months abbreviation list
         output$MonthMapSelector<-renderUI({
@@ -265,15 +302,8 @@ shinyServer(function(input, output) {
                 }})
         
         
-        #############################DATA EXPLORER###################################
         
-        output$climatetableCity = DT::renderDataTable({
-                climate_data
-        })
-        output$climatetableCountry = DT::renderDataTable({
-                climate_data2
-        })
-        #####################################WORLD MAP 2###############################################
+        #####################################WORLD MAP Country Data###############################################
         
         #get Years from data set Major City (the unique values)
         uniqueYearsCity<-sort(unique(climate_data$years)) 
@@ -352,6 +382,61 @@ shinyServer(function(input, output) {
                         #                 popup = borough_popup)  
                         addMarkers(~map2$Longitude, ~map2$Latitude, popup = borough_popup)
                 
+        })
+        
+        
+        #####################################Correlation Data###############################################
+        
+        
+        #read table and preprocess data
+        mean_temp <- aggregate(climate_data$AverageTemperature, by = list(climate_data$years), FUN = mean, na.rm = TRUE)
+        names(mean_temp) <- c("year", "avg_T")
+        sea_level$Year <- as.Date(sea_level$Year)
+        sea_level$YYYY <- as.numeric(format(sea_level$Year,'%Y'))
+        CO2$Total_CO2 <- CO2$Total*3.667
+        
+        # merge and subset data between year 1900 and 2013
+        df <- merge(mean_temp, sea_level, by.x = "year", by.y = "YYYY")
+        df <- merge(df, CO2, by.x = "year", by.y = "Year")
+        df <- subset(df, df$year >= 1900 & df$year <= 2013)
+        df <- data.frame(df$year, df$avg_T, df$CSIRO.Adjusted.Sea.Level, df$Total_CO2)
+        names(df) <- c("year", "global_average_temperature", "sea_level_relative_to_year_1880", "anthropogenic_CO2_emission")
+        
+        
+        output$CorrelationPlot<-renderPlot({
+                #melt the data and plot a stacked line graph
+                df.m <- melt(df, "year")
+                ggplot(df.m, aes(year, value, colour = variable)) + geom_line() +
+                        facet_wrap(~variable, ncol = 1, scales = "free_y", 
+                                   strip.position = "left", 
+                                   labeller = as_labeller(c(global_average_temperature = "deg Celcius",
+                                                            sea_level_relative_to_year_1880 = "inch",
+                                                            anthropogenic_CO2_emission = "million metric tons")))  +
+                        ylab(NULL)
+                
+        })
+        
+        output$CorrelationPlot2<-renderPlot({
+                
+                #To create a pairplot with correlation on the bottom triangle
+                # Correlation panel
+                panel.cor <- function(x, y){
+                        usr <- par("usr"); on.exit(par(usr))
+                        par(usr = c(0, 1, 0, 1))
+                        r <- round(cor(x, y), digits=4)
+                        txt <- paste0("R = ", r)
+                        cex.cor <- 0.8/strwidth(txt)
+                        text(0.5, 0.5, txt, cex = cex.cor * r)
+                }
+                # Customize upper panel
+                upper.panel<-function(x, y){
+                        points(x,y, pch = 19, col = "limegreen")
+                        abline(lm(y~x), col = "red", lwd = 3)
+                }
+                # Create the plots
+                pairs(df[,2:4], 
+                      lower.panel = panel.cor,
+                      upper.panel = upper.panel)
         })
         
 })
