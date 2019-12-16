@@ -1,0 +1,15 @@
+---
+
+title: "InteractiveChartCOuntryDescription"
+
+author: "Group 11 - Fatin Nabila , Steven Chong , Syed Rusyaidi , Lee Chun Mun"
+
+date: "December 16, 2019"
+
+output: html_document
+
+---
+
+
+
+This section will display the Interactive Line Plot for the Country Data with the selected desirable input of Country and years. The Line Plot will display info on the Average Temperature, Country, Month and Year.
