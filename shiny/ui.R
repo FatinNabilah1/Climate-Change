@@ -10,6 +10,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                   
                   # Application title
                   titlePanel("Global Climate Change (Analysis of Earth Surface Temperature)"),
+                  includeMarkdown("welcome.Rmd"),
                   navbarPage("", id="nav",
                              navbarMenu("Interactive Chart",
                                      tabPanel("Interactive Chart Major City",
@@ -50,9 +51,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                               helpText("Select one or more country:"),
                                                               uiOutput("CountrySelectorIC2"),
                                                               
-                                                              
                                                               helpText("Select years:"),
-                                                              uiOutput("YearSelectorIC2"),
+                                                              uiOutput("YearSelectorIC2"), 
+                                                              uiOutput("markdownICCountry")  
                                                       ),
                                                       
                                                       #Main Panel contains the plot/s
@@ -73,17 +74,17 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                              navbarMenu("World Map",
                                      tabPanel("World Map Major City",
                                                sidebarLayout(
-                                                 
+                                               
                                                sidebarPanel(
                                                helpText("Select month:"),
                                                uiOutput("MonthMap2Selector"),
                                                helpText("Select years:"),
-                                               uiOutput("YearMap2Selector")
-                                                     
-                                                     
+                                               uiOutput("YearMap2Selector"), 
+                                               uiOutput("markdownmapCity")     
                                                ),
                                               #Main Panel contains the plot/s
                                               mainPanel(
+                                              
                                               leafletOutput("worldmap2", height=500)
                                               ))
                                      ),
@@ -94,7 +95,8 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                               helpText("Select month:"),
                                                               uiOutput("MonthMapSelector"),
                                                               helpText("Select years:"),
-                                                              uiOutput("YearMapSelector")
+                                                              uiOutput("YearMapSelector"),
+                                                              uiOutput("markdownmapCountry")
                                                               
                                                               
                                                       ),
@@ -102,5 +104,14 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                       mainPanel(
                                                               leafletOutput("worldmap", height=500)
                                                       ))
-                                     )))
+                                     )),
+                             navbarMenu("Correlation",
+                                        tabPanel("Correlation Data Analysis 1",
+                                                 basicPage(
+                                                   plotOutput(outputId = "CorrelationPlot", height=800,width = 1500)
+                                                 )),
+                                        tabPanel("Correlation Data Analysis 2",
+                                                 basicPage(
+                                                   plotOutput("CorrelationPlot2")
+                                                 ))))
 ))
