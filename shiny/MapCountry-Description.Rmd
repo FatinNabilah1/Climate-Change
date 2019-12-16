@@ -1,0 +1,16 @@
+---
+
+title: "WorldMapDescription"
+
+author: "Group 11 - Fatin Nabila , Steven Chong , Syed Rusyaidi , Lee Chun Mun"
+
+date: "December 16, 2019"
+
+output: html_document
+
+---
+
+
+
+This section will display the Interactive Map for the Country Data with the selected desirable input of month and years.
+the map will be displaying an info on the Average Temperature and Country.
