@@ -1,0 +1,17 @@
+---
+
+title: "Welcome"
+
+author: "Group 11 - Fatin Nabila , Steven Chong , Syed Rusyaidi , Lee Chun Mun"
+
+date: "December 16, 2019"
+
+output: html_document
+
+---
+
+
+
+Welcome! This dashboard show data collected from Kaggle for the purpose of analysis.<br> 
+Note that : Early data was collected by technicians using mercury thermometers, where any variation in the visit time impacted measurements. In the 1940s, the construction of airports caused many weather stations to be moved. In the 1980s, there was a move to electronic thermometers that are said to have a cooling bias. 
+You can read more about the the data set:  <a href="https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data">Kaggle Website</a>.
