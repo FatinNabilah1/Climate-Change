@@ -9,7 +9,7 @@ library(rgdal)
 library(leaflet)
 library(rworldmap)
 library(plotly)
-library(knitr)
+library(reshape2)
 
 #Load data set
 climate_data<-read.csv("GlobalLandTemperaturesByMajorCity.csv", header=TRUE, sep = ",")
@@ -398,7 +398,7 @@ shinyServer(function(input, output) {
         # merge and subset data between year 1900 and 2013
         df <- merge(mean_temp, sea_level, by.x = "year", by.y = "YYYY")
         df <- merge(df, CO2, by.x = "year", by.y = "Year")
-        df <- subset(df, df$year >= 1900 & df$year <= 2013)
+        df <- subset(df, df$year >= 1981 & df$year <= 2013)
         df <- data.frame(df$year, df$avg_T, df$CSIRO.Adjusted.Sea.Level, df$Total_CO2)
         names(df) <- c("year", "global_average_temperature", "sea_level_relative_to_year_1880", "anthropogenic_CO2_emission")
         
