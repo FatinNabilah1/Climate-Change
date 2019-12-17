@@ -11,13 +11,14 @@ Shiny App : https://w7001.shinyapps.io/shiny/
 Rpubs Slide : http://rpubs.com/coper_li/560369
 
 Content :    
-          >> Data Folder << 
-             all the available data set used for this project
-             
+                       
           >> Data-cleaning Folder <<
              ISO_converter.R (retrieve the ISO code for the map purpose)
              clean.R (filtering to desirable years data and splitting of date to month and year)
-             
+          
+          >> Data Folder << 
+             all the available data set used for this project
+          
           >> Shiny Folder <<
              server.R
              ui.R 
